@@ -1,38 +1,45 @@
-CARD_TYPES = {
-    LAND: 0,
-    CREATURE: 1,
-    INSTANT: 2,
-    SORCERY: 3,
-    ENCHANTMENT: 4,
-    PLANESWALKER: 5,
-    ARTIFACT: 6,
-    TRIBAL: 7
-}
+import random
 
-COLORS = {
-    WHITE: 0,
-    BLUE: 1,
-    BLACK: 2,
-    RED: 3,
-    GREEN: 4,
-    COLORLESS: 5
-}
+class Enum:
+    pass
 
-PHASES = {
-    UNTAP: 0,
-    UPKEEP: 1,
-    DRAW: 2,
-    MAIN1: 3,
-    BEGIN_COMBAT: 4,
-    DECLARE_ATTACKERS: 5,
-    DECLARE_BLOCKERS: 6,
-    FIRST_STRIKE_COMBAT_DAMAGE: 7,
-    COMBAT_DAMAGE: 8,
-    END_COMBAT: 9,
-    MAIN2: 10,
-    END: 11,
-    CLEANUP: 12
-}
+CARD_TYPES = Enum()
+CARD_TYPES.LAND = 0
+CARD_TYPES.CREATURE = 1
+CARD_TYPES.INSTANT = 2
+CARD_TYPES.SORCERY = 3
+CARD_TYPES.ENCHANTMENT = 4
+CARD_TYPES.PLANESWALKER = 5
+CARD_TYPES.ARTIFACT = 6
+CARD_TYPES.TRIBAL = 7
+
+COLORS = Enum()
+COLORS.WHITE = 0
+COLORS.BLUE = 1
+COLORS.BLACK = 2
+COLORS.RED = 3
+COLORS.GREEN = 4
+COLORS.COLORLESS = 5
+
+PHASES = Enum()
+PHASES.UNTAP = 0
+PHASES.UPKEEP = 1
+PHASES.DRAW = 2
+PHASES.MAIN1 = 3
+PHASES.BEGIN_COMBAT = 4
+PHASES.DECLARE_ATTACKERS = 5
+PHASES.DECLARE_BLOCKERS = 6
+PHASES.FIRST_STRIKE_COMBAT_DAMAGE = 7
+PHASES.COMBAT_DAMAGE = 8
+PHASES.END_COMBAT = 9
+PHASES.MAIN2 = 10
+PHASES.END = 11
+PHASES.CLEANUP = 12
+
+EFFECT_ID = 0
+CARD_ID = 0
+PERMANENT_ID = 0
+SPELL_ID = 0
 
 class ManaCost(object):
     def __init__(self):
@@ -52,12 +59,49 @@ class ManaRepository(object):
         self.green = 0
         self.colorless = 0
 
+    def canPay(self, cost):
+        return (self.white >= cost.white and
+            self.blue >= cost.blue and
+            self.black >= cost.black and
+            self.red >= cost.red and
+            self.green >= cost.green and
+            self.colorless >= cost.colorless)
+
     def spendMana(self, cost):
-        
+        if not self.canPay(cost):
+            return False
+        self.white -= cost.white
+        self.blue -= cost.blue
+        self.black -= cost.black
+        self.red -= cost.red
+        self.green -= cost.green
+        self.colorless -= cost.colorless
 
 class CardAttributes(object):
-    def __init__(self):
-        self.
+    def __init__(self,
+                 colors=list(),
+                 types=list(),
+                 costs=list(),
+                 subtypes=list(),
+                 power=None,
+                 toughness=None,
+                 owner=None):
+        self.colors = colors
+        self.types = types
+        self.costs = costs
+        self.subtypes = subtypes
+        self.power = power
+        self.toughness = toughness
+        self.owner = owner
+
+    def isPermanentCard(self):
+        return any(
+            map(lambda type: type in [CARD_TYPES.LAND,
+                                CARD_TYPES.CREATURE,
+                                CARD_TYPES.ENCHANTMENT,
+                                CARD_TYPES.PLANESWALKER,
+                                CARD_TYPES.ARTIFACT],
+                self.types))
 
 class GameState(object):
     def __init__(self):
@@ -108,26 +152,42 @@ class GameState(object):
     def addCard(self, card, player):
         self.hands[player] += [card]
 
-    def playCard(self, card):
-        # assume card is already removed from hand
-        
-
     def applyEffect(self, effect):
         effect(self)
+
+    def shuffleDeck(self, player):
+        random.shuffle(self.libraries[player])
+
+    def getOpponent(self, player):
+        if player == 1:
+            return 2
+        elif player == 2:
+            return 1
+        return 0
+
+    def putPermanentIntoGraveyard(self, permanent):
+        pass
+
+    def checkStateBasedActions(self):
+        # Put all creatures that have lethal damage marked on them into graveyards
+        pass
 
 class Effect(object):
     def __init__(self):
         self.actions = []
+        self.id = EFFECT_ID
+        EFFECT_ID += 1
 
     def addAction(self, action):
         self.actions += [action]
 
 class Permanent(object):
-    def __init__(self):
+    def __init__(self, attributes):
+        self.attributes = attributes
         self.controller = 0
-        self.owner = 0
-        self.colors = []
-        self.types = []
+        self.damage = 0
+        self.id = EFFECT_ID
+        EFFECT_ID += 1
 
     def isType(self, type):
         return type in self.types
@@ -138,20 +198,20 @@ class Permanent(object):
         return color in self.colors
 
 class Spell(object):
-    def __init__(self):
-        self.isPermanentCard = False
+    def __init__(self, attributes):
+        self.attributes = attributes
+        self.id = SPELL_ID
+        SPELL_ID += 1
 
     def permanentize(self):
         if not self.isPermanentCard:
             return None
-        
 
 class Card(object):
-    def __init__(self):
-        pass
-
-    def play(self):
-        if card.type
+    def __init__(self, attributes):
+        self.attributes = attributes
+        self.id = CARD_ID
+        CARD_ID += 1
 
 class DelayedEffect(object):
     def __init__(self):
