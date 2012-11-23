@@ -18,10 +18,46 @@ COLORS = {
     COLORLESS: 5
 }
 
-class ManaRepository(object):
-    def __init__(object):
+PHASES = {
+    UNTAP: 0,
+    UPKEEP: 1,
+    DRAW: 2,
+    MAIN1: 3,
+    BEGIN_COMBAT: 4,
+    DECLARE_ATTACKERS: 5,
+    DECLARE_BLOCKERS: 6,
+    FIRST_STRIKE_COMBAT_DAMAGE: 7,
+    COMBAT_DAMAGE: 8,
+    END_COMBAT: 9,
+    MAIN2: 10,
+    END: 11,
+    CLEANUP: 12
+}
+
+class ManaCost(object):
+    def __init__(self):
         self.white = 0
         self.blue = 0
+        self.black = 0
+        self.red = 0
+        self.green = 0
+        self.colorless = 0
+
+class ManaRepository(object):
+    def __init__(self):
+        self.white = 0
+        self.blue = 0
+        self.black = 0
+        self.red = 0
+        self.green = 0
+        self.colorless = 0
+
+    def spendMana(self, cost):
+        
+
+class CardAttributes(object):
+    def __init__(self):
+        self.
 
 class GameState(object):
     def __init__(self):
@@ -73,7 +109,11 @@ class GameState(object):
         self.hands[player] += [card]
 
     def playCard(self, card):
+        # assume card is already removed from hand
         
+
+    def applyEffect(self, effect):
+        effect(self)
 
 class Effect(object):
     def __init__(self):
@@ -97,5 +137,23 @@ class Permanent(object):
             return True
         return color in self.colors
 
+class Spell(object):
+    def __init__(self):
+        self.isPermanentCard = False
+
+    def permanentize(self):
+        if not self.isPermanentCard:
+            return None
+        
+
+class Card(object):
+    def __init__(self):
+        pass
+
+    def play(self):
+        if card.type
+
 class DelayedEffect(object):
-    pass
+    def __init__(self):
+        self.triggerCondition = lambda state: False
+        self.effect = lambda state: state
