@@ -1,4 +1,4 @@
-gres
+Rules Enforcement Server
 ====
 
-enforcement server
+An enforcement server for a very special set of rules.
