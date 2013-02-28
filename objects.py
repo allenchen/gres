@@ -203,19 +203,28 @@ class GameState(object):
         self.hands[player] += [card]
 
     def applyEffect(self, effect):
-        effect(self)
+        # effect: Effect()
+        effect.apply(self)
+
+    def testEffect(self, delayedEffect):
+        # effect: DelayedEffect()
+        return delayedEffect.test(self)
 
     def shuffleDeck(self, player):
-        random.shuffle(self.libraries[player])
+        # player: Player()
+        random.shuffle(self.libraries[player.getIndex()])
 
     def getOpponent(self, player):
-        if player == 1:
+        # player: Player()
+        # TODO(allenchen): Should this return the player object?
+        if player.getIndex() == 1:
             return 2
-        elif player == 2:
+        elif player.getIndex() == 2:
             return 1
         return 0
 
     def putPermanentIntoGraveyard(self, permanent):
+        # permanent: Permanent()
         controller = permanent.controller
         # TODO(allenchen): Progress and put stuff into graveyards, trigger effects.
         # Need a hook into "graveyard trigger".
@@ -241,6 +250,7 @@ class Stack(object):
         self.stack = []
 
     def push(self, entity):
+        # entity: Entity()
         self.stack.append(entity)
 
     def pop(self):
@@ -250,13 +260,18 @@ class Stack(object):
             return None
         return self.stack.pop()
 
-class Effect(object):
+class Entity(object):
+    def apply(self, gamestate):
+        pass
+
+class Effect(Entity):
     def __init__(self):
         self.actions = []
         self.id = EFFECT_ID
         EFFECT_ID += 1
 
     def addAction(self, action):
+        # action: lambda gamestate: [[void]]
         # Actions ARE order sensitive; they should be added with care.
         self.actions += [action]
 
@@ -264,8 +279,26 @@ class Effect(object):
         for action in self.actions:
             action(gamestate)
 
+class DelayedEffect(Entity):
+    def __init__(self, triggerCondition, effect):
+        # triggerCondition: lambda gamestate: [[returns true|false]]
+        # effect: lambda gamestate: [[void]]
+        self.triggerCondition = triggerCondition
+        self.effect = effect
+
+    # These are called from the gamestate.
+    def apply(self, gamestate):
+        # gamestate: GameState()
+        self.effect.apply(gamestate)
+
+    def test(self, gamestate):
+        # gamestate: GameState()
+        return self.triggerCondition(gamestate)
+
 class Permanent(object):
     def __init__(self, attributes):
+        # TODO(allenchen): PermanentAttributes() don't exist yet.
+        # attributes: PermanentAttributes()
         self.attributes = attributes
         self.controller = 0
         self.damage = 0
@@ -273,9 +306,11 @@ class Permanent(object):
         PERMANENT_ID += 1
 
     def isType(self, type):
+        # type: [E]CARD_TYPES : integer
         return type in self.types
 
     def isColor(self, color):
+        # color: [E]COLORS : integer
         if color == COLORS.COLORLESS and len(self.attributes.colors) is 0:
             return True
         return color in self.colors
@@ -307,18 +342,3 @@ class Card(object):
         self.attributes = attributes
         self.id = CARD_ID
         CARD_ID += 1
-
-class DelayedEffect(object):
-    def __init__(self, triggerCondition, effect):
-        # triggerCondition: lambda gamestate: [[returns true|false]]
-        # effect: lambda gamestate: [[void]]
-        self.triggerCondition = triggerCondition
-        self.effect = effect
-
-    def trigger(self, gamestate):
-        # gamestate: GameState()
-        # TODO(allenchen): How do we represent the global gamestate?
-        self.effect(gamestate)
-
-    def test(self, gamestate):
-        return self.triggerCondition(gamestate)

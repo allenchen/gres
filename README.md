@@ -7,7 +7,7 @@ TODO
 ====
 
 * >>Split Card() class into CardData() and PlayingCard()<<
-* What's the best way to represent the global gamestate?  We pass it around everywhere as a parameter to every function but functions get cluttered with gamestate parameters.
+* GameState currently handles all the logic - is that the right way?
 * objects.py needs some love (ie organization into more than one file)
 * Client
 * Tests
